@@ -49,10 +49,10 @@ public class indexer {
               
               if (!wordIndex.containsKey(query))
               {
-                wordIndex.put(query, " " + String.valueOf(i + 1) + ", ");
+                wordIndex.put(query, " " + String.valueOf(i + 1) + "-" + this.getWTF(word, fileContent.get(i)) + ", ");
               }
-              else if (!wordIndex.get(query).contains(" " + String.valueOf(i + 1) + ", "))
-                wordIndex.replace(query, wordIndex.get(query) + String.valueOf(i + 1) + ", ");
+              else if (!wordIndex.get(query).contains(" " + String.valueOf(i + 1) + "-" + this.getWTF(word, fileContent.get(i))  + ", "))
+                wordIndex.replace(query, wordIndex.get(query) + String.valueOf(i + 1) + "-" + this.getWTF(word, fileContent.get(i)) + ", ");
             }
                             //else existence[0][j] = 0;
                         
@@ -91,7 +91,7 @@ public class indexer {
     
     public void getSkipWords()
     {
-        File f = new File("C:\\Users\\Jolo Simeon\\Projects\\Indexing\\fil-function-words.txt");
+        File f = new File("C:\\Users\\baldi_000\\Documents\\intrnlp\\indexing\\fil-function-words.txt");
         String text = "";
         if(f.isFile()) 
                 {
@@ -150,7 +150,7 @@ public class indexer {
        String[] files = new String[303];   
        for(int i = 0; i< 303;i++)
         {
-            files[i] = "C:\\Users\\Jolo Simeon\\Projects\\Indexing\\resources\\Tagalog News - " + i + ".txt";
+            files[i] = "C:\\Users\\baldi_000\\Documents\\intrnlp\\indexing\\resources\\Tagalog News - " + i + ".txt";
         }
         for (int j = 0; j<303; j++) 
             {   String bigS = "";
@@ -197,7 +197,8 @@ public class indexer {
     
     public void getWords() throws IOException
     {
-        String target_dir = "C:\\Users\\Jolo Simeon\\Projects\\Indexing\\resources";
+        System.out.println("Hello");
+        String target_dir = "C:\\Users\\baldi_000\\Documents\\intrnlp\\indexing\\resources";
         File dir = new File(target_dir);
         File[] files = dir.listFiles();
         
@@ -290,6 +291,21 @@ public class indexer {
         }
 
         System.out.print("result: " + result);
+        
+    }
+    public double getWTF(String word, String bigS)
+    {
+        Pattern p = Pattern.compile("(" + word + ")");
+        Matcher m = p.matcher(bigS);
+        int tf = 0; //term frequency
+        double wtf = 0; // weighted term frequency
+        while(m.find())
+            tf++;
+        
+        if(tf > 0)
+            wtf = 1 + Math.log10(tf);
+        
+        return wtf;
         
     }
 }

@@ -25,12 +25,13 @@ public class INTRNLPExerciseIR {
      */
      public static void main(String[] args) throws IOException
     {
+      System.out.print("hello");
       indexer in = new indexer(" ");
-      //in.getSkipWords();
-      //in.getWords();
-      String input;
-      Scanner sc = new Scanner(System.in);
-      input = sc.next();
-      in.Search(input);
+      in.getSkipWords();
+      in.getWords();
+      //String input;
+      //Scanner sc = new Scanner(System.in);
+      //input = sc.next();
+      //in.Search(input);
     }
 }
