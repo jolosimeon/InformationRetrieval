@@ -30,6 +30,7 @@ public class indexer {
     private ArrayList<String> skipWords;
     private ArrayList<String> fileContent;
     private HashMap<String, String> wordIndex;
+    private HashMap<String, String> wordIndexTFIDF;
     
     public indexer(String path)
     {
@@ -37,6 +38,7 @@ public class indexer {
         db = new Database();
         skipWords = new ArrayList<>();
         wordIndex = new HashMap<>();
+        wordIndexTFIDF = new HashMap<>();
         fileContent = new ArrayList<>();
     }
     public void index(String word) throws IOException
@@ -46,13 +48,13 @@ public class indexer {
         for (int i = 0; i < fileContent.size(); i++)
             if(fileContent.get(i).toLowerCase().contains(query))
             {
-              
+              //wordIndex.
               if (!wordIndex.containsKey(query))
               {
-                wordIndex.put(query, " " + String.valueOf(i + 1) + "-" + this.getWTF(word, fileContent.get(i)) + ", ");
+                wordIndex.put(query, " " + String.valueOf(i + 1) + "-" + String.valueOf(this.getWTF(word, fileContent.get(i))) + ", ");
               }
-              else if (!wordIndex.get(query).contains(" " + String.valueOf(i + 1) + "-" + this.getWTF(word, fileContent.get(i))  + ", "))
-                wordIndex.replace(query, wordIndex.get(query) + String.valueOf(i + 1) + "-" + this.getWTF(word, fileContent.get(i)) + ", ");
+              else if (!wordIndex.get(query).contains(" " + String.valueOf(i + 1) + "-" + String.valueOf(this.getWTF(word, fileContent.get(i)))  + ", "))
+                wordIndex.replace(query, wordIndex.get(query) + String.valueOf(i + 1) + "-" + String.valueOf(this.getWTF(word, fileContent.get(i))) + ", ");
             }
                             //else existence[0][j] = 0;
                         
@@ -306,6 +308,63 @@ public class indexer {
             wtf = 1 + Math.log10(tf);
         
         return wtf;
+        
+    }
+    
+    public double getIDF(String word)
+    {
+        
+        int N = 303; //the N in the forumla based on what i think is the total no of terms in the document
+        int df;
+        String fetch;
+        fetch =  db.getFiles(word);
+        
+        String[] files = fetch.split(",");
+        df = files.length;
+        double idf;
+        
+        idf = Math.log10(N/df);
+        
+        return idf;
+        
+    }
+    
+    public double getTF_IDF_W(String word, String bigS)
+    {
+        
+        double tf_idf_w;
+        
+        tf_idf_w = getWTF(word,bigS) * getIDF(word);
+        
+        return tf_idf_w;
+        
+    }
+    
+    public void DoTFIDF()
+    {
+
+        for (Map.Entry<String, String> entry : wordIndex.entrySet())
+        {
+           String newEnt = "";
+           String oldS = entry.getValue();
+           String[] files = oldS.split(",");
+           for(int i = 0; i < files.length; i++)
+           {   String[] tfs = files[i].split("-");
+               files[i] = files[i] + "-" + String.valueOf((Math.log10(303/files.length)*(Integer.valueOf(tfs[1])))) + ", ";
+               newEnt = newEnt + files[i];
+           }
+           wordIndexTFIDF.put(entry.getKey(), newEnt);
+            
+        }
+        //saveToDatabseTFIDF(); //not sure kung tama pa to
+    }
+    
+    public void saveToDatabaseTFIDF()
+    {
+        for (Map.Entry<String, String> entry : wordIndexTFIDF.entrySet())
+        {
+            db.addRow(entry.getKey(), entry.getValue());
+        }
         
     }
 }

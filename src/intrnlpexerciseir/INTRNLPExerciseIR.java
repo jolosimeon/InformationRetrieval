@@ -23,12 +23,13 @@ public class INTRNLPExerciseIR {
     /**
      * @param args the command line arguments
      */
-     public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException
     {
-      System.out.print("hello");
       indexer in = new indexer(" ");
       in.getSkipWords();
       in.getWords();
+      //in.DoTFIDF();
+      
       //String input;
       //Scanner sc = new Scanner(System.in);
       //input = sc.next();
