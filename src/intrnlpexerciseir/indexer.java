@@ -31,6 +31,7 @@ public class indexer {
     private ArrayList<String> fileContent;
     private HashMap<String, String> wordIndex;
     private HashMap<String, String> wordIndexTFIDF;
+    private HashMap<String, Double> scoring;
     
     public indexer(String path)
     {
@@ -49,12 +50,14 @@ public class indexer {
             if(fileContent.get(i).toLowerCase().contains(query))
             {
               //wordIndex.
+                String wtf = String.format("%.2f",this.getWTF(word, fileContent.get(i)));
               if (!wordIndex.containsKey(query))
               {
-                wordIndex.put(query, " " + String.valueOf(i + 1) + "-" + String.valueOf(this.getWTF(word, fileContent.get(i))) + ", ");
+                
+                wordIndex.put(query, " " + String.valueOf(i + 1) + "-" + wtf + ", ");
               }
-              else if (!wordIndex.get(query).contains(" " + String.valueOf(i + 1) + "-" + String.valueOf(this.getWTF(word, fileContent.get(i)))  + ", "))
-                wordIndex.replace(query, wordIndex.get(query) + String.valueOf(i + 1) + "-" + String.valueOf(this.getWTF(word, fileContent.get(i))) + ", ");
+              else if (!wordIndex.get(query).contains(" " + String.valueOf(i + 1) + "-" + wtf  + ", "))
+                wordIndex.replace(query, wordIndex.get(query) + String.valueOf(i + 1) + "-" + wtf + ", ");
             }
                             //else existence[0][j] = 0;
                         
@@ -248,7 +251,7 @@ public class indexer {
                         this.index(m.group().toLowerCase());
                     //System.out.println(m.group());
             }
-            saveToDatabase();
+            //saveToDatabase();
     }
     
     public ArrayList getFiles(String word)
@@ -350,17 +353,19 @@ public class indexer {
            String[] files = oldS.split(",");
            for(int i = 0; i < files.length; i++)
            {   String[] tfs = files[i].split("-");
-               files[i] = files[i] + "-" + String.valueOf((Math.log10(303/files.length)*(Integer.valueOf(tfs[1])))) + ", ";
+               String tf_idf = String.format("%.2f",(Math.log10(303/files.length)*(2)));
+               files[i] = files[i] + "-" + tf_idf + ", ";
                newEnt = newEnt + files[i];
            }
            wordIndexTFIDF.put(entry.getKey(), newEnt);
             
         }
-        //saveToDatabseTFIDF(); //not sure kung tama pa to
+        saveToDatabaseTFIDF(); //not sure kung tama pa to
     }
     
     public void saveToDatabaseTFIDF()
     {
+        
         for (Map.Entry<String, String> entry : wordIndexTFIDF.entrySet())
         {
             db.addRow(entry.getKey(), entry.getValue());

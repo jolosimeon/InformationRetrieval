@@ -4,7 +4,7 @@ USE NLP;
 CREATE TABLE existence
 (
 word			varchar(50)			    NOT NULL,
-files    		varchar(10000)		    NOT NULL,
+files    		varchar(20000)		    NOT NULL,
 
 PRIMARY KEY(word)
 );

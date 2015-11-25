@@ -28,7 +28,7 @@ public class INTRNLPExerciseIR {
       indexer in = new indexer(" ");
       in.getSkipWords();
       in.getWords();
-      //in.DoTFIDF();
+      in.DoTFIDF();
       
       //String input;
       //Scanner sc = new Scanner(System.in);
