@@ -13,7 +13,7 @@ public class DBConnection
 	public DBConnection()
 	{
 		this.username = "root";
-		this.password = "lucky";
+		this.password = "";
 		this.url = "jdbc:mysql://localhost:3306/nlp";
 
 		try

@@ -11,9 +11,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +37,7 @@ public class indexer {
     private ArrayList<String> fileContent;
     private HashMap<String, String> wordIndex;
     private HashMap<String, String> wordIndexTFIDF;
-    private HashMap<String, Double> scoring;
+    private HashMap<String, HashMap<String, String>> documents;
     
     public indexer(String path)
     {
@@ -96,7 +102,7 @@ public class indexer {
     
     public void getSkipWords()
     {
-        File f = new File("C:\\Users\\baldi_000\\Documents\\intrnlp\\indexing\\fil-function-words.txt");
+        File f = new File("C:\\Users\\Jolo Simeon\\Projects\\Indexing\\fil-function-words.txt");
         String text = "";
         if(f.isFile()) 
                 {
@@ -155,7 +161,7 @@ public class indexer {
        String[] files = new String[303];   
        for(int i = 0; i< 303;i++)
         {
-            files[i] = "C:\\Users\\baldi_000\\Documents\\intrnlp\\indexing\\resources\\Tagalog News - " + i + ".txt";
+            files[i] = "C:\\Users\\Jolo Simeon\\Projects\\Indexing\\resources\\Tagalog News - " + i + ".txt";
         }
         for (int j = 0; j<303; j++) 
             {   String bigS = "";
@@ -203,7 +209,7 @@ public class indexer {
     public void getWords() throws IOException
     {
         System.out.println("Hello");
-        String target_dir = "C:\\Users\\baldi_000\\Documents\\intrnlp\\indexing\\resources";
+        String target_dir = "C:\\Users\\Jolo Simeon\\Projects\\Indexing\\resources";
         File dir = new File(target_dir);
         File[] files = dir.listFiles();
         
@@ -281,25 +287,81 @@ public class indexer {
         
     }
     
+    public void retrieveAll()
+    {
+        documents = db.getAllFiles();
+    }
+    
     public void Search(String query)
     {
         String words[];
         words = query.split("-");
-        ArrayList<String> result = new ArrayList();
-        ArrayList<String> temp = new ArrayList();
-        result = this.getFiles(words[0]);
-        for(int i = 1; i < words.length; i++)
-        {  temp =  this.getFiles(words[i]);
-            for (int j = 0; j < temp.size(); j++)
-                if(!(result.contains(temp.get(j))))
-                    result.add((temp.get(j)));
+        HashMap<String, Double> alldocs = new HashMap();
+        for (int i = 0; i < words.length; i++)
+        {
+            
+            HashMap<String, String> scores = documents.get(words[i]);
+            int num = 1; //0 for TF, 1 for TF*IDF
+            if (scores!=null)
+                for (Map.Entry<String, String> entry : scores.entrySet())
+                {
+                    String[] tfandtfIDF = entry.getValue().split("-");
+                    if (!alldocs.containsKey(entry.getKey()))
+                        alldocs.put(entry.getKey(), Double.valueOf(tfandtfIDF[num]));
+                    else
+                    {
+                        String[] tfandtfIDF2 = entry.getValue().split("-");
+                        alldocs.replace(entry.getKey(), Double.valueOf(tfandtfIDF2[num]) + Double.valueOf(tfandtfIDF[num]));
+
+                    }
+                }
+        }
+        Map<String, Double> map = alldocs;
+        Map<String, Double> sortedMap = sortByComparator(map, false);
+        System.out.println(alldocs.size());
+        for (Map.Entry<String, Double> entry : sortedMap.entrySet())
+        {
+            System.out.println(entry.getKey() + " - " + String.format("%.2f", entry.getValue()));
+        }
+            
+    }
+    
+    private static Map<String, Double> sortByComparator(Map<String, Double> unsortMap, boolean order)
+    {
+
+        List<Entry<String, Double>> list = new LinkedList<Entry<String, Double>>(unsortMap.entrySet());
+
+        // Sorting the list based on values
+        Collections.sort(list, new Comparator<Entry<String, Double>>()
+        {
+            public int compare(Entry<String, Double> o1,
+                    Entry<String, Double> o2)
+            {
+                if (order)
+                {
+                    return o1.getValue().compareTo(o2.getValue());
+                }
+                else
+                {
+                    return o2.getValue().compareTo(o1.getValue());
+
+                }
+            }
+        });
+
+        // Maintaining insertion order with the help of LinkedList
+        Map<String, Double> sortedMap = new LinkedHashMap<String, Double>();
+        for (Entry<String, Double> entry : list)
+        {
+            sortedMap.put(entry.getKey(), entry.getValue());
         }
 
-        System.out.print("result: " + result);
-        
+        return sortedMap;
     }
+    
     public double getWTF(String word, String bigS)
     {
+        bigS = bigS.toLowerCase();
         Pattern p = Pattern.compile("(" + word + ")");
         Matcher m = p.matcher(bigS);
         int tf = 0; //term frequency
@@ -351,9 +413,9 @@ public class indexer {
            String newEnt = "";
            String oldS = entry.getValue();
            String[] files = oldS.split(",");
-           for(int i = 0; i < files.length; i++)
+           for(int i = 0; i < files.length - 1; i++)
            {   String[] tfs = files[i].split("-");
-               String tf_idf = String.format("%.2f",(Math.log10(303/files.length)*(2)));
+               String tf_idf = String.format("%.2f",(Math.log10(303/files.length)*(Double.valueOf(tfs[1]))));
                files[i] = files[i] + "-" + tf_idf + ", ";
                newEnt = newEnt + files[i];
            }
